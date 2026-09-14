@@ -19,16 +19,22 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install yfpy
+        run: pip install -r requirements.txt
 
       # Restore the OAuth token file you generated locally (see README).
       # Put the contents of your local .auth/*.env file into this secret.
+      # NOTE: yfpy's save_access_token_data_to_env_file() defaults to a
+      # file literally named ".env" inside env_file_location - it does not
+      # use "yfpy.env" or any other name unless the script explicitly
+      # passes env_file_name, which yahoo_dashboard.py does not. Writing
+      # to any other filename here means yfpy silently can't find the
+      # restored token and auth fails in CI (no browser available).
       - name: Restore Yahoo OAuth token
         env:
           YFPY_ENV_FILE: ${{ secrets.YFPY_ENV_FILE }}
         run: |
           mkdir -p .auth
-          printf '%s' "$YFPY_ENV_FILE" > .auth/yfpy.env
+          printf '%s' "$YFPY_ENV_FILE" > .auth/.env
 
       - name: Generate dashboard
         env:
